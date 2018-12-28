@@ -3,7 +3,9 @@ package ir.rkr.goldpan
 
 import com.google.gson.GsonBuilder
 import com.typesafe.config.ConfigFactory
+import ir.rkr.goldpan.h2.H2Builder
 import ir.rkr.goldpan.kafka.KafkaConnector
+import ir.rkr.goldpan.rest.JettyRestServer
 import ir.rkr.goldpan.utils.GoldPanMetrics
 import mu.KotlinLogging
 import java.sql.DriverManager
@@ -12,7 +14,6 @@ import java.util.concurrent.TimeUnit
 
 const val version = 0.1
 
-data class Events(val name: String, val id: Int)
 
 /**
  * CacheService main entry point.
@@ -22,38 +23,32 @@ fun main(args: Array<String>) {
     val logger = KotlinLogging.logger {}
     val config = ConfigFactory.defaultApplication()
     val goldPanMetrics = GoldPanMetrics()
-    val gson = GsonBuilder().disableHtmlEscaping().create()
 
     val kafka = KafkaConnector("kariz", config, goldPanMetrics)
+    val h2 = H2Builder(kafka, config, goldPanMetrics)
 
-    val con = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;MULTI_THREADED=TRUE;")
-    val st = con.createStatement()
-    println(st.executeUpdate("CREATE TABLE TEST(ID INT PRIMARY KEY, NAME VARCHAR(255));"))
+    h2.executeUpdate("CREATE TABLE TEST(ID INT PRIMARY KEY, NAME VARCHAR(255));")
+    JettyRestServer(h2, config, goldPanMetrics)
 
-//    Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay({
-
+    Thread.sleep(2000)
     while (true) {
-        val events = kafka.get()
-        if (events.size > 0) {
-            events.forEach { t, u ->
-                val parsed = gson.fromJson(u, Events::class.java)
-               st.executeUpdate("INSERT into  TEST(ID,NAME) values(${parsed.id},'${parsed.name}');")
+
+
+        val res = h2.executeQuery("select * from TEST where ID=29 ;")
+
+        while (res.next())
+
+
+            for (i in 1..(res.metaData.columnCount )) {
+
+            println(res.metaData.getColumnClassName(i))
+//                println(res.getInt("ID").toString()+", "+res.getString("NAME"))
             }
-            kafka.commit()
-        }
 
-//    }, 0, 100, TimeUnit.MILLISECONDS)
-
-
-//    for (i in 1..700000)
-//        st.executeUpdate("INSERT into  TEST(ID,NAME) values($i,'ali$i');")
-
-        val res = st.executeQuery("select count(*) from TEST ;")
-
-        if (res.next())
-            println("4 " + res.getInt(1))
+        println("")
+        Thread.sleep(1000)
     }
-
+}
 
 //    val logger = KotlinLogging.logger {}
 //    val config = ConfigFactory.defaultApplication()
@@ -128,4 +123,4 @@ fun main(args: Array<String>) {
 //    println(res.next())
 //    println(res.getInt(1))
 
-}
+
