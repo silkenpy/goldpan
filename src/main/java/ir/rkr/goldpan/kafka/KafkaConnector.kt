@@ -34,9 +34,9 @@ class KafkaConnector(val topicName: String, config: Config, val goldPanMetrics: 
         config.getObject("kafka.consumer").forEach({ x, y -> println("kafka config $x --> $y"); consumerCfg.put(x, y.unwrapped()) })
         consumerCfg.put("key.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer")
         consumerCfg.put("value.deserializer", "org.apache.kafka.common.serialization.ByteArrayDeserializer")
-//        consumerCfg.put("group.id", "${hostName}${System.currentTimeMillis()}")
-//        consumerCfg.put("auto.offset.reset", "earliest")
-//        consumerCfg.put("enable.auto.commit", "false")
+        consumerCfg.put("group.id", "${hostName}${System.currentTimeMillis()}")
+        consumerCfg.put("auto.offset.reset", "earliest")
+        consumerCfg.put("enable.auto.commit", "false")
         consumer = KafkaConsumer(consumerCfg)
 
         Thread.sleep(100)
@@ -51,11 +51,12 @@ class KafkaConnector(val topicName: String, config: Config, val goldPanMetrics: 
 
             consumer.subscribe(Collections.singletonList(topicName))
             val res = consumer.poll(Duration.ofMillis(700))
-            res.records(topicName).forEach { it -> msg[String(it.key())] = String(it.value())   }
+            res.records(topicName).forEach { it ->  msg["${it.partition()}${it.offset()}"] = String(it.value())   }
             goldPanMetrics.MarkKafkaGetRecords(msg.size.toLong())
             msg
 
         } catch (e: java.lang.Exception) {
+            println(e)
             goldPanMetrics.MarkKafkaGetFail(1)
             msg
         }

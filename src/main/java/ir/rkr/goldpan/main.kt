@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 
 const val version = 0.1
 
-data class Events(val name: String, val key: Int)
+data class Events(val name: String, val id: Int)
 
 /**
  * CacheService main entry point.
@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
     val logger = KotlinLogging.logger {}
     val config = ConfigFactory.defaultApplication()
     val goldPanMetrics = GoldPanMetrics()
-     val gson = GsonBuilder().disableHtmlEscaping().create()
+    val gson = GsonBuilder().disableHtmlEscaping().create()
 
     val kafka = KafkaConnector("kariz", config, goldPanMetrics)
 
@@ -30,26 +30,29 @@ fun main(args: Array<String>) {
     val st = con.createStatement()
     println(st.executeUpdate("CREATE TABLE TEST(ID INT PRIMARY KEY, NAME VARCHAR(255));"))
 
-    Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay({
+//    Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay({
+
+    while (true) {
         val events = kafka.get()
         if (events.size > 0) {
             events.forEach { t, u ->
                 val parsed = gson.fromJson(u, Events::class.java)
-                 st.executeUpdate("INSERT into  TEST(ID,NAME) values(${parsed.key},'${parsed.name}');")
+               st.executeUpdate("INSERT into  TEST(ID,NAME) values(${parsed.id},'${parsed.name}');")
             }
+            kafka.commit()
         }
 
-    }, 0, 100, TimeUnit.MILLISECONDS)
-
+//    }, 0, 100, TimeUnit.MILLISECONDS)
 
 
 //    for (i in 1..700000)
 //        st.executeUpdate("INSERT into  TEST(ID,NAME) values($i,'ali$i');")
 
-    val res = st.executeQuery("select * from TEST where ID='29' ;")
+        val res = st.executeQuery("select count(*) from TEST ;")
 
-    res.next()
-    println("4 " + res.getString("NAME"))
+        if (res.next())
+            println("4 " + res.getInt(1))
+    }
 
 
 //    val logger = KotlinLogging.logger {}
