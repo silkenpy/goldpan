@@ -8,9 +8,8 @@ import ir.rkr.goldpan.kafka.KafkaConnector
 import ir.rkr.goldpan.rest.JettyRestServer
 import ir.rkr.goldpan.utils.GoldPanMetrics
 import mu.KotlinLogging
-import java.sql.DriverManager
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
+import org.json.JSONObject
+
 
 const val version = 0.1
 
@@ -23,32 +22,68 @@ fun main(args: Array<String>) {
     val logger = KotlinLogging.logger {}
     val config = ConfigFactory.defaultApplication()
     val goldPanMetrics = GoldPanMetrics()
-
-    val kafka = KafkaConnector("kariz", config, goldPanMetrics)
+    val kafka = KafkaConnector(config.getString("kafka.topic"), config, goldPanMetrics)
     val h2 = H2Builder(kafka, config, goldPanMetrics)
+    val gson = GsonBuilder().disableHtmlEscaping().create()
 
-    h2.executeUpdate("CREATE TABLE TEST(ID INT PRIMARY KEY, NAME VARCHAR(255));")
+//    h2.executeUpdate("CREATE TABLE TEST(ID INT PRIMARY KEY, NAME VARCHAR(255));")
+//    data class Stats(val s: Long, val e: Long, val gr: Int, val gp: Int, val mr: Int, val ms: Int, val vc: Int)
+//    h2.executeUpdate("CREATE TABLE CSTATS(ID INT PRIMARY KEY, NAME VARCHAR(255));")
     JettyRestServer(h2, config, goldPanMetrics)
 
     Thread.sleep(2000)
-    while (true) {
 
-
-        val res = h2.executeQuery("select * from TEST where ID=29 ;")
-
-        while (res.next())
-
-
-            for (i in 1..(res.metaData.columnCount )) {
-
-            println(res.metaData.getColumnClassName(i))
-//                println(res.getInt("ID").toString()+", "+res.getString("NAME"))
-            }
-
-        println("")
-        Thread.sleep(1000)
-    }
+//    while (true) {
+////        val rs = h2.executeQuery("select * from TEST where t='2018-12-25 01:16:00.0' ;")
+//        val rs = h2.executeQuery("select * from TEST  ;")
+//        while (rs.next()) {
+//            val numColumns = rs.metaData.getColumnCount()
+//            val obj = JSONObject()
+//
+//            for (i in 1 until numColumns + 1) {
+//                val column_name = rs.metaData.getColumnName(i)
+//
+//                when (rs.metaData.getColumnType(i)) {
+//                    java.sql.Types.ARRAY -> obj.put(column_name, rs.getArray(column_name))
+//                    java.sql.Types.BIGINT -> obj.put(column_name, rs.getInt(column_name))
+//                    java.sql.Types.BOOLEAN -> obj.put(column_name, rs.getBoolean(column_name))
+//                    java.sql.Types.BLOB -> obj.put(column_name, rs.getBlob(column_name))
+//                    java.sql.Types.DOUBLE -> obj.put(column_name, rs.getDouble(column_name))
+//                    java.sql.Types.FLOAT -> obj.put(column_name, rs.getFloat(column_name))
+//                    java.sql.Types.INTEGER -> obj.put(column_name, rs.getInt(column_name))
+//                    java.sql.Types.NVARCHAR -> obj.put(column_name, rs.getNString(column_name))
+//                    java.sql.Types.VARCHAR -> obj.put(column_name, rs.getString(column_name))
+//                    java.sql.Types.TINYINT -> obj.put(column_name, rs.getInt(column_name))
+//                    java.sql.Types.SMALLINT -> obj.put(column_name, rs.getInt(column_name))
+//                    java.sql.Types.DATE -> obj.put(column_name, rs.getDate(column_name))
+//                    java.sql.Types.TIMESTAMP -> obj.put(column_name, rs.getTimestamp(column_name))
+//                    else -> obj.put(column_name, rs.getObject(column_name))
+//                }
+//            }
+//            println(obj.toString())
+//        }
+//
+//        Thread.sleep(10000)
+//    }
 }
+//    while (true) {
+//
+//        val res = h2.executeQuery("select * from TEST where t='2018-12-25 01:16:00.0' ;")
+//        while (res.next())
+//            println(res)
+//
+//
+////            for (i in 1..(res.metaData.columnCount)) {
+////                println(res.getTimestamp("t").toString() + ", " + res.getInt("gr").toString() +", "
+////                            + res.getInt("gp").toString()+ ", " + res.getInt("mr").toString() + ", "
+////                            + res.getInt("ms").toString() + ", " + res.getInt("vc").toString())
+////            }
+//
+//            println("")
+//        Thread.sleep(1000)
+//    }
+
+
 
 //    val logger = KotlinLogging.logger {}
 //    val config = ConfigFactory.defaultApplication()

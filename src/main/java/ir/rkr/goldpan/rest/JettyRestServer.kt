@@ -13,6 +13,8 @@ import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.jetty.util.thread.QueuedThreadPool
+import org.json.JSONObject
+import java.sql.ResultSet
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -23,9 +25,52 @@ import javax.servlet.http.HttpServletResponse
  * in-memory cache layer based on ignite to increase performance and decrease number of requests of
  * redis cluster.
  */
-class JettyRestServer(val h2: H2Builder, config: Config, val goldPanMetrics: GoldPanMetrics) : HttpServlet() {
+
+fun resultsetToJson( rs: ResultSet) : String{
+
+//    val result = JSONObject()
+
+    var result = StringBuilder()
+//    var count = 0
+    while (rs.next()) {
+
+        val numColumns = rs.metaData.getColumnCount()
+        val obj = JSONObject()
+
+        for (i in 1 until numColumns + 1) {
+            val column_name = rs.metaData.getColumnName(i)
+
+            when (rs.metaData.getColumnType(i)) {
+                java.sql.Types.ARRAY -> obj.put(column_name, rs.getArray(column_name))
+                java.sql.Types.BIGINT -> obj.put(column_name, rs.getInt(column_name))
+                java.sql.Types.BOOLEAN -> obj.put(column_name, rs.getBoolean(column_name))
+                java.sql.Types.BLOB -> obj.put(column_name, rs.getBlob(column_name))
+                java.sql.Types.DOUBLE -> obj.put(column_name, rs.getDouble(column_name))
+                java.sql.Types.FLOAT -> obj.put(column_name, rs.getFloat(column_name))
+                java.sql.Types.INTEGER -> obj.put(column_name, rs.getInt(column_name))
+                java.sql.Types.NVARCHAR -> obj.put(column_name, rs.getNString(column_name))
+                java.sql.Types.VARCHAR -> obj.put(column_name, rs.getString(column_name))
+                java.sql.Types.TINYINT -> obj.put(column_name, rs.getInt(column_name))
+                java.sql.Types.SMALLINT -> obj.put(column_name, rs.getInt(column_name))
+                java.sql.Types.DATE -> obj.put(column_name, rs.getDate(column_name))
+                java.sql.Types.TIMESTAMP -> obj.put(column_name, rs.getTimestamp(column_name))
+                else -> obj.put(column_name, rs.getObject(column_name))
+            }
+        }
+        result.append("\n"+obj.toString())
+        // println(obj.toString())
+//        result.put(count.toString(), obj.toString())
+//        count += 1
+    }
+
+    return result.toString()
+
+}
+
+class JettyRestServer( h2: H2Builder, config: Config,  goldPanMetrics: GoldPanMetrics) : HttpServlet() {
 
     private val gson = GsonBuilder().disableHtmlEscaping().create()
+
     /**
      * Start a jetty server.
      */
@@ -33,7 +78,7 @@ class JettyRestServer(val h2: H2Builder, config: Config, val goldPanMetrics: Gol
         val threadPool = QueuedThreadPool(100, 20)
         val server = Server(threadPool)
         val http = ServerConnector(server).apply {
-            host= config.getString("metrics.ip")
+            host = config.getString("metrics.ip")
             port = config.getInt("metrics.port")
         }
         server.addConnector(http)
@@ -55,19 +100,20 @@ class JettyRestServer(val h2: H2Builder, config: Config, val goldPanMetrics: Gol
                 }
             }
 
-        })   , "/")
+        }), "/")
 
 
         handler.addServlet(ServletHolder(object : HttpServlet() {
             override fun doPost(req: HttpServletRequest, resp: HttpServletResponse) {
 
                 val parsedJson = gson.fromJson<Array<String>>(req.reader.readText())
+                val rs = h2.executeQuery(parsedJson[0])
 
                 resp.apply {
                     status = HttpStatus.OK_200
                     addHeader("Content-Type", "application/json; charset=utf-8")
                     //addHeader("Connection", "close")
-                   // writer.write(gson.toJson(ignite.query(parsedJson[0])))
+                     writer.write(resultsetToJson(rs))
                 }
             }
         }), "/query")

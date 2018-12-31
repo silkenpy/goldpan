@@ -1,10 +1,10 @@
 kafka{
-     topic = "kariz"
+     topic = "cstats"
      consumer{
          "bootstrap.servers" = ["silken:9092"]
-      //   "group.id" = test6
+        "group.id" = a6
          "enable.auto.commit"= false
-       //  "auto.offset.reset" = latest
+         "auto.offset.reset" = earliest
          "max.poll.records" = 50000
 
      }

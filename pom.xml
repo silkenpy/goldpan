@@ -20,11 +20,18 @@
             <version>1.4.197</version>
             <!--<scope>test</scope>-->
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20180813</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.jetbrains.exposed/exposed -->
         <!--<dependency>-->
-            <!--<groupId>org.jetbrains.exposed</groupId>-->
-            <!--<artifactId>exposed</artifactId>-->
-            <!--<version>0.11.1</version>-->
+        <!--<groupId>org.jetbrains.exposed</groupId>-->
+        <!--<artifactId>exposed</artifactId>-->
+        <!--<version>0.11.1</version>-->
         <!--</dependency>-->
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -85,6 +92,12 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.10.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.zaxxer/HikariCP -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>3.2.0</version>
         </dependency>
 
         <dependency>
