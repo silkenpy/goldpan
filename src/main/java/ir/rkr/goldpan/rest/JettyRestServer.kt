@@ -4,6 +4,7 @@ package ir.rkr.goldpan.rest
 import com.google.gson.GsonBuilder
 import com.typesafe.config.Config
 import ir.rkr.goldpan.h2.H2Builder
+import ir.rkr.goldpan.h2.H2Builder4Traffic
 import ir.rkr.goldpan.utils.GoldPanMetrics
 import ir.rkr.goldpan.utils.fromJson
 
@@ -30,7 +31,9 @@ fun resultsetToJson( rs: ResultSet) : String{
 
 //    val result = JSONObject()
 
-    var result = StringBuilder()
+    val result = StringBuilder()
+    result.append("CREATE TABLE TRAFFIC(id BIGINT, net INT, mediaType INT, sent BIGINT, received BIGINT, sentByte BIGINT," +
+            " receivedByte BIGINT, sentPerDay BIGINT, receivedPerDay BIGINT, t TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(id, net, mediaType) );\n")
 //    var count = 0
     while (rs.next()) {
 
@@ -67,7 +70,7 @@ fun resultsetToJson( rs: ResultSet) : String{
 
 }
 
-class JettyRestServer( h2: H2Builder, config: Config,  goldPanMetrics: GoldPanMetrics) : HttpServlet() {
+class JettyRestServer( h2: H2Builder4Traffic, config: Config,  goldPanMetrics: GoldPanMetrics) : HttpServlet() {
 
     private val gson = GsonBuilder().disableHtmlEscaping().create()
 
