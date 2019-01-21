@@ -19,7 +19,8 @@ class GoldPanMetrics {
 
     val metricRegistry = MetricRegistry()
 
-    val NettyRequests = metricRegistry.meter("nettyRequests")
+    val DuplicateRecords = metricRegistry.meter("DuplicateRecords")
+    val InvalidUser = metricRegistry.meter("InvalidUser")
 
     val KafkaGetCall = metricRegistry.meter("kafkaGetCall")
     val KafkaGetFail = metricRegistry.meter("kafkaGetFail")
@@ -47,7 +48,8 @@ class GoldPanMetrics {
     val CaffeineExpireSuccess = metricRegistry.meter("CaffeineExpireSuccess")
     val CaffeineExpireFail = metricRegistry.meter("CaffeineExpireFail")
 
-    fun MarkNettyRequests(l: Long = 1) = NettyRequests.mark(l)
+    fun MarkDuplicateRecords(l: Long = 1) = DuplicateRecords.mark(l)
+    fun MarkInvalidUser(l: Long = 1) = InvalidUser.mark(l)
 
     fun MarkKafkaGetFail(l: Long = 1) = KafkaGetFail.mark(l)
     fun MarkKafkaGetRecords(l: Long = 1) = KafkaGetRecords.mark(l)

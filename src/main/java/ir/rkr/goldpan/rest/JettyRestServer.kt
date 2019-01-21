@@ -7,7 +7,6 @@ import ir.rkr.goldpan.h2.H2Builder
 import ir.rkr.goldpan.h2.H2Builder4Traffic
 import ir.rkr.goldpan.utils.GoldPanMetrics
 import ir.rkr.goldpan.utils.fromJson
-
 import org.eclipse.jetty.http.HttpStatus
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
@@ -27,7 +26,7 @@ import javax.servlet.http.HttpServletResponse
  * redis cluster.
  */
 
-fun resultsetToJson( rs: ResultSet) : String{
+fun resultsetToJson(rs: ResultSet): String {
 
 //    val result = JSONObject()
 
@@ -60,7 +59,7 @@ fun resultsetToJson( rs: ResultSet) : String{
                 else -> obj.put(column_name, rs.getObject(column_name))
             }
         }
-        result.append("\n"+obj.toString())
+        result.append("\n" + obj.toString())
         // println(obj.toString())
 //        result.put(count.toString(), obj.toString())
 //        count += 1
@@ -70,7 +69,8 @@ fun resultsetToJson( rs: ResultSet) : String{
 
 }
 
-class JettyRestServer( h2: H2Builder4Traffic, config: Config,  goldPanMetrics: GoldPanMetrics) : HttpServlet() {
+//class JettyRestServer( h2: H2Builder4Traffic, config: Config,  goldPanMetrics: GoldPanMetrics) : HttpServlet() {
+class JettyRestServer(h2: H2Builder, config: Config, goldPanMetrics: GoldPanMetrics) : HttpServlet() {
 
     private val gson = GsonBuilder().disableHtmlEscaping().create()
 
@@ -116,7 +116,7 @@ class JettyRestServer( h2: H2Builder4Traffic, config: Config,  goldPanMetrics: G
                     status = HttpStatus.OK_200
                     addHeader("Content-Type", "application/json; charset=utf-8")
                     //addHeader("Connection", "close")
-                     writer.write(resultsetToJson(rs))
+                    writer.write(resultsetToJson(rs))
                 }
             }
         }), "/query")

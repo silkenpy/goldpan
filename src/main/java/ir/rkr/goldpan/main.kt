@@ -22,7 +22,8 @@ fun main(args: Array<String>) {
     val config = ConfigFactory.defaultApplication()
     val goldPanMetrics = GoldPanMetrics()
     val kafka = KafkaConnector(config.getString("kafka.topic"), config, goldPanMetrics)
-    val h2 = H2Builder4Traffic(kafka, config, goldPanMetrics)
+    val h2 = H2Builder(kafka, config, goldPanMetrics)
+//    val h2 = H2Builder4Traffic(kafka, config, goldPanMetrics)
 
     JettyRestServer(h2, config, goldPanMetrics)
 
